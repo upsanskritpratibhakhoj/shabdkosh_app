@@ -1,98 +1,243 @@
-import * as Device from 'expo-device';
-import { Platform, StyleSheet } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import React from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  Image,
+  TouchableOpacity,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { Feather } from "@expo/vector-icons";
+import { COLORS, TYPOGRAPHY } from "../constants/theme";
+import Header from "../components/Header";
+import BottomTabBar from "../components/BottomTabBar";
+import FeatureCard from "../components/FeatureCard";
+import { router } from "expo-router";
 
-import { AnimatedIcon } from '@/components/animated-icon';
-import { HintRow } from '@/components/hint-row';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { WebBadge } from '@/components/web-badge';
-import { BottomTabInset, MaxContentWidth, Spacing } from '@/constants/theme';
+export default function OnboardingScreen() {
+  const handleBeginJourney = () => {
+    router.push("/translate");
+  };
 
-function getDevMenuHint() {
-  if (Platform.OS === 'web') {
-    return <ThemedText type="small">use browser devtools</ThemedText>;
-  }
-  if (Device.isDevice) {
-    return (
-      <ThemedText type="small">
-        shake device or press <ThemedText type="code">m</ThemedText> in terminal
-      </ThemedText>
-    );
-  }
-  const shortcut = Platform.OS === 'android' ? 'cmd+m (or ctrl+m)' : 'cmd+d';
   return (
-    <ThemedText type="small">
-      press <ThemedText type="code">{shortcut}</ThemedText>
-    </ThemedText>
-  );
-}
+    <View style={styles.outerContainer}>
+      <Header variant="onboarding" />
+      
+      {/* Background Decorative Blur/Outline Element */}
+      <View style={styles.decoratorCircle} />
 
-export default function HomeScreen() {
-  return (
-    <ThemedView style={styles.container}>
-      <SafeAreaView style={styles.safeArea}>
-        <ThemedView style={styles.heroSection}>
-          <AnimatedIcon />
-          <ThemedText type="title" style={styles.title}>
-            Welcome to&nbsp;Expo
-          </ThemedText>
-        </ThemedView>
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Hero Card Container */}
+        <View style={styles.heroCard}>
+          {/* Logo Section */}
+          <View style={styles.logoContainer}>
+            <Image
+              source={require("../../assets/images/shabd_logo.png")}
+              style={styles.logo}
+              resizeMode="contain"
+            />
+          </View>
 
-        <ThemedText type="code" style={styles.code}>
-          get started
-        </ThemedText>
+          {/* Sanskrit Quote Section */}
+          <View style={styles.quoteSection}>
+            <Text style={styles.quoteText}>
+              "विद्यैव सर्वधनम् प्रधानम्"
+            </Text>
+            
+            {/* Ornament Separator */}
+            <View style={styles.ornamentContainer}>
+              <View style={styles.ornamentLine} />
+              <Feather name="minus" size={16} color="#8f4e004d" />
+              <View style={styles.ornamentLine} />
+            </View>
 
-        <ThemedView type="backgroundElement" style={styles.stepContainer}>
-          <HintRow
-            title="Try editing"
-            hint={<ThemedText type="code">src/app/index.tsx</ThemedText>}
-          />
-          <HintRow title="Dev tools" hint={getDevMenuHint()} />
-          <HintRow
-            title="Fresh start"
-            hint={<ThemedText type="code">npm run reset-project</ThemedText>}
-          />
-        </ThemedView>
+            <Text style={styles.quoteTranslation}>
+              Knowledge is the supreme of all{"\n"}wealth.
+            </Text>
+          </View>
 
-        {Platform.OS === 'web' && <WebBadge />}
-      </SafeAreaView>
-    </ThemedView>
+          {/* Action Button */}
+          <TouchableOpacity
+            style={styles.actionButton}
+            onPress={handleBeginJourney}
+            activeOpacity={0.9}
+          >
+            <Text style={styles.actionButtonText}>Begin Your Journey</Text>
+            <Feather name="arrow-right" size={18} color="#ffffff" style={styles.actionButtonIcon} />
+          </TouchableOpacity>
+        </View>
+
+        {/* Feature Grid Section */}
+        <View style={styles.featuresSection}>
+          <View style={styles.featuresHeader}>
+            <Text style={styles.featuresTitle}>KEY PILLARS</Text>
+            <TouchableOpacity activeOpacity={0.7}>
+              <Text style={styles.exploreAllText}>Explore All</Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* Bento Grid layout */}
+          <View style={styles.bentoGrid}>
+            <FeatureCard
+              title="Vedic Etymology"
+              description="Trace sacred roots across centuries."
+              iconName="layers"
+              layout="horizontal"
+              height={108}
+            />
+            
+            <View style={styles.bentoRow}>
+              <FeatureCard
+                title="Classic Texts"
+                description="Context from the Puranas."
+                iconName="file-text"
+                layout="vertical"
+                width="48%"
+                height={160}
+              />
+              <FeatureCard
+                title="Pronunciation"
+                description="Master the holy chanting."
+                iconName="volume-2"
+                layout="vertical"
+                width="48%"
+                height={160}
+              />
+            </View>
+          </View>
+        </View>
+      </ScrollView>
+
+      <BottomTabBar activeTab="library" />
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  outerContainer: {
     flex: 1,
-    justifyContent: 'center',
-    flexDirection: 'row',
+    backgroundColor: COLORS.background,
   },
-  safeArea: {
+  decoratorCircle: {
+    position: "absolute",
+    width: 500,
+    height: 500,
+    borderRadius: 250,
+    borderWidth: 1,
+    borderColor: "rgba(143, 78, 0, 0.08)", // subtle primary stroke
+    left: -55,
+    top: 192,
+    zIndex: -1,
+  },
+  scrollContent: {
+    paddingHorizontal: 24,
+    paddingTop: 24,
+    paddingBottom: 120, // margin to scroll clear of bottom navigation bar
+  },
+  heroCard: {
+    backgroundColor: COLORS.card,
+    borderRadius: 24,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    padding: 24,
+    alignItems: "center",
+    shadowColor: COLORS.primary,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.04,
+    shadowRadius: 16,
+    elevation: 3,
+  },
+  logoContainer: {
+    width: 128,
+    height: 128,
+    marginBottom: 24,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  logo: {
+    width: 128,
+    height: 128,
+  },
+  quoteSection: {
+    alignItems: "center",
+    marginBottom: 32,
+  },
+  quoteText: {
+    fontFamily: TYPOGRAPHY.serifItalic,
+    fontSize: 26,
+    color: COLORS.primary,
+    textAlign: "center",
+    lineHeight: 36,
+  },
+  ornamentContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginVertical: 12,
+    width: 120,
+    justifyContent: "space-between",
+  },
+  ornamentLine: {
+    height: 1,
+    backgroundColor: "#8f4e004d",
     flex: 1,
-    paddingHorizontal: Spacing.four,
-    alignItems: 'center',
-    gap: Spacing.three,
-    paddingBottom: BottomTabInset + Spacing.three,
-    maxWidth: MaxContentWidth,
+    marginHorizontal: 8,
   },
-  heroSection: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    flex: 1,
-    paddingHorizontal: Spacing.four,
-    gap: Spacing.four,
+  quoteTranslation: {
+    fontFamily: TYPOGRAPHY.sans,
+    fontSize: 15,
+    color: COLORS.textMuted,
+    textAlign: "center",
+    lineHeight: 22,
   },
-  title: {
-    textAlign: 'center',
+  actionButton: {
+    width: "100%",
+    height: 60,
+    backgroundColor: COLORS.primary,
+    borderRadius: 16,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 24,
   },
-  code: {
-    textTransform: 'uppercase',
+  actionButtonText: {
+    fontFamily: TYPOGRAPHY.sansSemiBold,
+    fontSize: 18,
+    color: COLORS.textLight,
   },
-  stepContainer: {
-    gap: Spacing.three,
-    alignSelf: 'stretch',
-    paddingHorizontal: Spacing.three,
-    paddingVertical: Spacing.four,
-    borderRadius: Spacing.four,
+  actionButtonIcon: {
+    marginLeft: 12,
+  },
+  featuresSection: {
+    marginTop: 40,
+  },
+  featuresHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 16,
+    justifyContent: "space-between",
+  },
+  featuresTitle: {
+    fontFamily: TYPOGRAPHY.sans,
+    fontSize: 14,
+    fontWeight: "600",
+    color: COLORS.textMuted,
+    letterSpacing: 1.6,
+  },
+  exploreAllText: {
+    fontFamily: TYPOGRAPHY.sansSemiBold,
+    fontSize: 14,
+    color: COLORS.primary,
+  },
+  bentoGrid: {
+    gap: 16,
+  },
+  bentoRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    width: "100%",
   },
 });

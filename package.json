@@ -3,8 +3,13 @@
   "main": "expo-router/entry",
   "version": "1.0.0",
   "dependencies": {
+    "@expo-google-fonts/be-vietnam-pro": "^0.4.1",
+    "@expo-google-fonts/literata": "^0.4.3",
     "@expo/ui": "~56.0.21",
+    "@expo/vector-icons": "^15.1.1",
+    "@react-native-async-storage/async-storage": "^3.1.1",
     "expo": "~56.0.15",
+    "expo-clipboard": "^57.0.0",
     "expo-constants": "~56.0.20",
     "expo-device": "~56.0.4",
     "expo-font": "~56.0.7",
