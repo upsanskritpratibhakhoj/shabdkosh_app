@@ -147,3 +147,47 @@ export async function toggleBookmark(hindi: string, sanskrit: string): Promise<b
     return false;
   }
 }
+
+// DICTIONARY MANAGEMENT
+export interface DictionaryItem {
+  hindi: string;
+  sanskrit: string;
+}
+
+const DICTIONARY_KEY = "sabdkosh_dictionary_v1";
+
+export async function getDictionary(): Promise<DictionaryItem[]> {
+  try {
+    const data = await AsyncStorage.getItem(DICTIONARY_KEY);
+    return data ? JSON.parse(data) : [];
+  } catch (error) {
+    console.error("Error reading dictionary:", error);
+    return [];
+  }
+}
+
+export async function saveDictionary(data: DictionaryItem[]): Promise<void> {
+  try {
+    await AsyncStorage.setItem(DICTIONARY_KEY, JSON.stringify(data));
+  } catch (error) {
+    console.error("Error saving dictionary:", error);
+    throw error;
+  }
+}
+
+export async function fetchAndSaveDictionary(): Promise<DictionaryItem[]> {
+  const response = await fetch(
+    "https://raw.githubusercontent.com/upsanskritpratibhakhoj/shabdkosh_db/main/dictionary.json"
+  );
+  if (!response.ok) {
+    throw new Error(`Failed to fetch dictionary: ${response.statusText}`);
+  }
+  const data = await response.json();
+  if (Array.isArray(data)) {
+    await saveDictionary(data);
+    return data;
+  } else {
+    throw new Error("Invalid dictionary data format received from CDN");
+  }
+}
+

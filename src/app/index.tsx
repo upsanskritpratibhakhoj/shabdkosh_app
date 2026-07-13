@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   View,
   Text,
@@ -6,6 +6,8 @@ import {
   ScrollView,
   Image,
   TouchableOpacity,
+  ActivityIndicator,
+  Alert,
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { COLORS, TYPOGRAPHY } from "../constants/theme";
@@ -13,15 +15,56 @@ import Header from "../components/Header";
 import BottomTabBar from "../components/BottomTabBar";
 import FeatureCard from "../components/FeatureCard";
 import { router } from "expo-router";
+import { getDictionary, fetchAndSaveDictionary } from "../utils/storage";
 
 export default function OnboardingScreen() {
+  const [syncStatus, setSyncStatus] = useState<"idle" | "syncing" | "success" | "error">("idle");
+  const [wordCount, setWordCount] = useState<number>(0);
+
+  const handleSync = useCallback(async () => {
+    if (syncStatus === "syncing") return;
+    setSyncStatus("syncing");
+
+    try {
+      const data = await fetchAndSaveDictionary();
+      setWordCount(data.length);
+      setSyncStatus("success");
+      setTimeout(() => {
+        setSyncStatus("idle");
+      }, 3000);
+    } catch (error) {
+      console.error(error);
+      setSyncStatus("error");
+      Alert.alert(
+        "अद्यतनीकरणम् विफलम् (Sync Failed)",
+        "Could not update the offline database. Please check your internet connection."
+      );
+    }
+  }, [syncStatus]);
+
+  useEffect(() => {
+    const checkCache = async () => {
+      const local = await getDictionary();
+      setWordCount(local.length);
+      if (local.length === 0) {
+        handleSync();
+      }
+    };
+    checkCache();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const handleBeginJourney = () => {
     router.push("/translate");
   };
 
   return (
     <View style={styles.outerContainer}>
-      <Header variant="onboarding" />
+      <Header 
+        variant="onboarding" 
+        onRightPress={handleSync}
+        isRightLoading={syncStatus === "syncing"}
+      />
       
       {/* Background Decorative Blur/Outline Element */}
       <View style={styles.decoratorCircle} />
@@ -68,6 +111,41 @@ export default function OnboardingScreen() {
             <Text style={styles.actionButtonText}>Begin Your Journey</Text>
             <Feather name="arrow-right" size={18} color="#ffffff" style={styles.actionButtonIcon} />
           </TouchableOpacity>
+
+          {/* Offline Cache Status Badge */}
+          {syncStatus === "syncing" && (
+            <View style={styles.cacheBadge}>
+              <ActivityIndicator size="small" color={COLORS.primaryMedium} style={{ marginRight: 4 }} />
+              <Text style={styles.cacheBadgeText}>Syncing Sanskrit database...</Text>
+            </View>
+          )}
+
+          {syncStatus === "success" && (
+            <View style={styles.cacheBadge}>
+              <Feather name="check-circle" size={14} color="green" />
+              <Text style={[styles.cacheBadgeText, { color: "green" }]}>
+                Database updated! {wordCount.toLocaleString()} words loaded.
+              </Text>
+            </View>
+          )}
+
+          {syncStatus === "error" && (
+            <TouchableOpacity style={styles.cacheBadge} onPress={handleSync}>
+              <Feather name="alert-circle" size={14} color="#d32f2f" />
+              <Text style={[styles.cacheBadgeText, { color: "#d32f2f", textDecorationLine: "underline" }]}>
+                Sync failed. Tap to retry.
+              </Text>
+            </TouchableOpacity>
+          )}
+
+          {syncStatus === "idle" && wordCount > 0 && (
+            <View style={styles.cacheBadge}>
+              <Feather name="check-circle" size={14} color={COLORS.primaryMedium} />
+              <Text style={styles.cacheBadgeText}>
+                {wordCount.toLocaleString()} Sanskrit words saved offline
+              </Text>
+            </View>
+          )}
         </View>
 
         {/* Feature Grid Section */}
@@ -109,6 +187,8 @@ export default function OnboardingScreen() {
       </ScrollView>
 
       <BottomTabBar activeTab="library" />
+
+
     </View>
   );
 }
@@ -235,5 +315,19 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     width: "100%",
+  },
+
+  cacheBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 6,
+    marginTop: 20,
+    opacity: 0.8,
+  },
+  cacheBadgeText: {
+    fontFamily: TYPOGRAPHY.sans,
+    fontSize: 13,
+    color: COLORS.textMuted,
   },
 });

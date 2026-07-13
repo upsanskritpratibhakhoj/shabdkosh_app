@@ -136,7 +136,7 @@ const styles = StyleSheet.create({
   // Onboarding Active Styles
   libraryActiveTab: {
     backgroundColor: COLORS.primaryLight, // #8f4e000d
-    borderRadius: 16,
+    borderRadius: 12,
   },
   libraryActiveText: {
     color: COLORS.primary,
@@ -148,8 +148,8 @@ const styles = StyleSheet.create({
   },
   // Translation Active Styles
   translateActiveTab: {
-    backgroundColor: COLORS.secondary, // #ff9933
-    borderRadius: 9999, // round pill
+    backgroundColor: COLORS.secondaryLight, // soft translucent secondary fill
+    borderRadius: 12, // modern rounded rectangle instead of oval pill
   },
   translateActiveText: {
     color: COLORS.secondaryDark, // #693800

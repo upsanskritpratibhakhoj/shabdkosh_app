@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { COLORS, TYPOGRAPHY } from "../constants/theme";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -8,9 +8,17 @@ interface HeaderProps {
   variant: "onboarding" | "translation";
   onLeftPress?: () => void;
   onRightPress?: () => void;
+  rightIconName?: keyof typeof Feather.glyphMap;
+  isRightLoading?: boolean;
 }
 
-export default function Header({ variant, onLeftPress, onRightPress }: HeaderProps) {
+export default function Header({ 
+  variant, 
+  onLeftPress, 
+  onRightPress,
+  rightIconName = "refresh-cw",
+  isRightLoading = false 
+}: HeaderProps) {
   const insets = useSafeAreaInsets();
   const isOnboarding = variant === "onboarding";
 
@@ -23,10 +31,27 @@ export default function Header({ variant, onLeftPress, onRightPress }: HeaderPro
     >
       <View style={styles.content}>
         {isOnboarding ? (
-          // Onboarding Layout: Brand Left-Aligned
-          <View style={styles.leftSection}>
-            <Text style={styles.brandTitleOnboarding}>Shabd</Text>
-          </View>
+          // Onboarding Layout: Brand Left-Aligned, Refresh/Action on the right
+          <>
+            <View style={styles.leftSection}>
+              <Text style={styles.brandTitleOnboarding}>Shabdkosh</Text>
+            </View>
+            
+            {onRightPress && (
+              <TouchableOpacity 
+                onPress={onRightPress} 
+                style={styles.iconButton}
+                disabled={isRightLoading}
+                activeOpacity={0.6}
+              >
+                {isRightLoading ? (
+                  <ActivityIndicator size="small" color={COLORS.primary} />
+                ) : (
+                  <Feather name={rightIconName} size={20} color={COLORS.primary} />
+                )}
+              </TouchableOpacity>
+            )}
+          </>
         ) : (
           // Translation Layout: Back Button Left, Centered Title, Info Button Right
           <>
@@ -35,12 +60,8 @@ export default function Header({ variant, onLeftPress, onRightPress }: HeaderPro
             </TouchableOpacity>
             
             <View style={styles.centerSection}>
-              <Text style={styles.brandTitleTranslation}>Shabd</Text>
+              <Text style={styles.brandTitleTranslation}>Shabdkosh</Text>
             </View>
-
-            <TouchableOpacity onPress={onRightPress} style={styles.iconButton}>
-              <Feather name="info" size={20} color={COLORS.primary} />
-            </TouchableOpacity>
           </>
         )}
       </View>

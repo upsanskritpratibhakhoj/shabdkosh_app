@@ -9,6 +9,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   Animated,
+  ActivityIndicator,
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { COLORS, TYPOGRAPHY } from "../constants/theme";
@@ -16,11 +17,28 @@ import Header from "../components/Header";
 import BottomTabBar from "../components/BottomTabBar";
 import { router, useLocalSearchParams } from "expo-router";
 import * as Clipboard from "expo-clipboard";
-import dictionary from "../data/dictionary.json";
-import { addHistory, toggleBookmark, isBookmarked } from "../utils/storage";
+import { addHistory, toggleBookmark, isBookmarked, getDictionary, DictionaryItem } from "../utils/storage";
 
 export default function TranslateScreen() {
   const params = useLocalSearchParams<{ word?: string; sourceLang?: "hindi" | "sanskrit" }>();
+
+  const [dictionary, setDictionary] = useState<DictionaryItem[]>([]);
+  const [isLoadingDict, setIsLoadingDict] = useState(true);
+
+  // Load dictionary on mount
+  useEffect(() => {
+    const loadDictionaryData = async () => {
+      try {
+        const data = await getDictionary();
+        setDictionary(data);
+      } catch (err) {
+        console.error("Error loading dictionary from storage:", err);
+      } finally {
+        setIsLoadingDict(false);
+      }
+    };
+    loadDictionaryData();
+  }, []);
 
   const [sourceLang, setSourceLang] = useState<"hindi" | "sanskrit">("hindi");
   const [targetLang, setTargetLang] = useState<"hindi" | "sanskrit">("sanskrit");
@@ -33,7 +51,7 @@ export default function TranslateScreen() {
   const [toastVisible, setToastVisible] = useState(false);
   const [toastOpacity] = useState(() => new Animated.Value(0));
   const [toastTranslateY] = useState(() => new Animated.Value(15));
-  const toastTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
+  const toastTimeoutRef = React.useRef<any>(null);
 
   // Clean up toast timeout on unmount
   useEffect(() => {
@@ -89,7 +107,7 @@ export default function TranslateScreen() {
 
   // Sync with route params (if navigating from bookmarks or history)
   useEffect(() => {
-    if (params.word) {
+    if (params.word && dictionary.length > 0) {
       const sLang = params.sourceLang || "hindi";
       const tLang = sLang === "hindi" ? "sanskrit" : "hindi";
       /* eslint-disable react-hooks/set-state-in-effect */
@@ -107,7 +125,7 @@ export default function TranslateScreen() {
       }
       /* eslint-enable react-hooks/set-state-in-effect */
     }
-  }, [params.word, params.sourceLang]);
+  }, [params.word, params.sourceLang, dictionary]);
 
   // Sync bookmark state
   useEffect(() => {
@@ -190,6 +208,41 @@ export default function TranslateScreen() {
         );
       }).slice(0, 5)
     : [];
+
+  if (isLoadingDict) {
+    return (
+      <View style={styles.outerContainer}>
+        <Header variant="translation" onLeftPress={handleBack} />
+        <View style={styles.centeredContainer}>
+          <ActivityIndicator size="large" color={COLORS.primary} />
+          <Text style={styles.loadingText}>Loading dictionary...</Text>
+        </View>
+        <BottomTabBar activeTab="translate" />
+      </View>
+    );
+  }
+
+  if (dictionary.length === 0) {
+    return (
+      <View style={styles.outerContainer}>
+        <Header variant="translation" onLeftPress={handleBack} />
+        <View style={styles.centeredContainer}>
+          <Feather name="download-cloud" size={48} color={COLORS.primaryMedium} style={{ marginBottom: 16 }} />
+          <Text style={styles.emptyTitle}>Offline Cache Empty</Text>
+          <Text style={styles.emptySubtitle}>
+            Please connect to the internet and download the Sanskrit dictionary database to start.
+          </Text>
+          <TouchableOpacity 
+            style={styles.downloadButton}
+            onPress={() => router.replace("/")}
+          >
+            <Text style={styles.downloadButtonText}>Go to Onboarding & Sync</Text>
+          </TouchableOpacity>
+        </View>
+        <BottomTabBar activeTab="translate" />
+      </View>
+    );
+  }
 
   return (
     <View style={styles.outerContainer}>
@@ -563,6 +616,45 @@ const styles = StyleSheet.create({
   toastText: {
     fontFamily: TYPOGRAPHY.sansSemiBold,
     fontSize: 14,
+    color: COLORS.textLight,
+  },
+  centeredContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 32,
+    backgroundColor: COLORS.background,
+  },
+  loadingText: {
+    marginTop: 12,
+    fontFamily: TYPOGRAPHY.sans,
+    fontSize: 16,
+    color: COLORS.textMuted,
+  },
+  emptyTitle: {
+    fontFamily: TYPOGRAPHY.sansBold,
+    fontSize: 18,
+    color: COLORS.textDark,
+    textAlign: "center",
+    marginBottom: 8,
+  },
+  emptySubtitle: {
+    fontFamily: TYPOGRAPHY.sans,
+    fontSize: 14,
+    color: COLORS.textMuted,
+    textAlign: "center",
+    lineHeight: 20,
+    marginBottom: 24,
+  },
+  downloadButton: {
+    backgroundColor: COLORS.primary,
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 12,
+  },
+  downloadButtonText: {
+    fontFamily: TYPOGRAPHY.sansSemiBold,
+    fontSize: 15,
     color: COLORS.textLight,
   },
 });
