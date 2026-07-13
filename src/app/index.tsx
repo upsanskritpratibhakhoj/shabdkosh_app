@@ -7,7 +7,6 @@ import {
   Image,
   TouchableOpacity,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { Feather } from "@expo/vector-icons";
 import { COLORS, TYPOGRAPHY } from "../constants/theme";
 import Header from "../components/Header";
@@ -45,7 +44,7 @@ export default function OnboardingScreen() {
           {/* Sanskrit Quote Section */}
           <View style={styles.quoteSection}>
             <Text style={styles.quoteText}>
-              "विद्यैव सर्वधनम् प्रधानम्"
+              {"\"विद्यैव सर्वधनम् प्रधानम्\""}
             </Text>
             
             {/* Ornament Separator */}

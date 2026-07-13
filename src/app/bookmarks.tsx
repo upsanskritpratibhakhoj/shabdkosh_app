@@ -5,9 +5,9 @@ import {
   StyleSheet,
   FlatList,
   TouchableOpacity,
-  SafeAreaView,
   StatusBar,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { Feather } from "@expo/vector-icons";
 import { COLORS, TYPOGRAPHY } from "../constants/theme";
 import BottomTabBar from "../components/BottomTabBar";
@@ -85,7 +85,7 @@ export default function BookmarksScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={["top", "left", "right"]}>
       <StatusBar barStyle="dark-content" />
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Saved Words</Text>

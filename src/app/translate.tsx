@@ -33,6 +33,7 @@ export default function TranslateScreen() {
     if (params.word) {
       const sLang = params.sourceLang || "hindi";
       const tLang = sLang === "hindi" ? "sanskrit" : "hindi";
+      /* eslint-disable react-hooks/set-state-in-effect */
       setSourceLang(sLang);
       setTargetLang(tLang);
       setInputText(params.word);
@@ -45,6 +46,7 @@ export default function TranslateScreen() {
       } else {
         setTranslatedText("");
       }
+      /* eslint-enable react-hooks/set-state-in-effect */
     }
   }, [params.word, params.sourceLang]);
 
