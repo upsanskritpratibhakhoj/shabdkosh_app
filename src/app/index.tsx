@@ -74,34 +74,31 @@ export default function OnboardingScreen() {
         <View style={styles.featuresSection}>
           <View style={styles.featuresHeader}>
             <Text style={styles.featuresTitle}>KEY PILLARS</Text>
-            <TouchableOpacity activeOpacity={0.7}>
-              <Text style={styles.exploreAllText}>Explore All</Text>
-            </TouchableOpacity>
           </View>
 
           {/* Bento Grid layout */}
           <View style={styles.bentoGrid}>
             <FeatureCard
-              title="Vedic Etymology"
-              description="Trace sacred roots across centuries."
-              iconName="layers"
+              title="अनुवाद और शब्दकोश"
+              description="हिन्दी और संस्कृत शब्दों का आपस में सटीक और तीव्र अनुवाद करें।"
+              iconName="globe"
               layout="horizontal"
               height={108}
             />
             
             <View style={styles.bentoRow}>
               <FeatureCard
-                title="Classic Texts"
-                description="Context from the Puranas."
-                iconName="file-text"
+                title="पसंदीदा शब्द"
+                description="महत्वपूर्ण शब्दों को यहाँ सहेजें।"
+                iconName="bookmark"
                 layout="vertical"
                 width="48%"
                 height={160}
               />
               <FeatureCard
-                title="Pronunciation"
-                description="Master the holy chanting."
-                iconName="volume-2"
+                title="खोज इतिहास"
+                description="पिछली खोजें आसानी से देखें।"
+                iconName="clock"
                 layout="vertical"
                 width="48%"
                 height={160}

@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   KeyboardAvoidingView,
   Platform,
+  Animated,
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { COLORS, TYPOGRAPHY } from "../constants/theme";
@@ -27,6 +28,64 @@ export default function TranslateScreen() {
   const [translatedText, setTranslatedText] = useState("");
   const [showDropdown, setShowDropdown] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
+  const [isCopied, setIsCopied] = useState(false);
+  const [toastMessage, setToastMessage] = useState("");
+  const [toastVisible, setToastVisible] = useState(false);
+  const [toastOpacity] = useState(() => new Animated.Value(0));
+  const [toastTranslateY] = useState(() => new Animated.Value(15));
+  const toastTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
+
+  // Clean up toast timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (toastTimeoutRef.current) {
+        clearTimeout(toastTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  const showToastNotification = (message: string) => {
+    if (toastTimeoutRef.current) {
+      clearTimeout(toastTimeoutRef.current);
+    }
+    
+    setToastMessage(message);
+    setToastVisible(true);
+    
+    // Reset/Stop animation values
+    toastOpacity.setValue(0);
+    toastTranslateY.setValue(15);
+    
+    Animated.parallel([
+      Animated.timing(toastOpacity, {
+        toValue: 1,
+        duration: 200,
+        useNativeDriver: true,
+      }),
+      Animated.timing(toastTranslateY, {
+        toValue: 0,
+        duration: 200,
+        useNativeDriver: true,
+      }),
+    ]).start(() => {
+      toastTimeoutRef.current = setTimeout(() => {
+        Animated.parallel([
+          Animated.timing(toastOpacity, {
+            toValue: 0,
+            duration: 200,
+            useNativeDriver: true,
+          }),
+          Animated.timing(toastTranslateY, {
+            toValue: 15,
+            duration: 200,
+            useNativeDriver: true,
+          }),
+        ]).start(() => {
+          setToastVisible(false);
+        });
+      }, 1500);
+    });
+  };
 
   // Sync with route params (if navigating from bookmarks or history)
   useEffect(() => {
@@ -109,11 +168,17 @@ export default function TranslateScreen() {
     const sanskrit = sourceLang === "sanskrit" ? inputText.trim() : translatedText.trim();
     const added = await toggleBookmark(hindi, sanskrit);
     setIsSaved(added);
+    showToastNotification(added ? "Added to bookmarks!" : "Removed from bookmarks!");
   };
 
   const handleCopy = async () => {
     if (!translatedText) return;
     await Clipboard.setStringAsync(translatedText);
+    setIsCopied(true);
+    showToastNotification("Copied translation to clipboard!");
+    setTimeout(() => {
+      setIsCopied(false);
+    }, 2000);
   };
 
   const suggestions = inputText.trim()
@@ -140,7 +205,15 @@ export default function TranslateScreen() {
           keyboardShouldPersistTaps="handled"
         >
           {/* SOURCE INPUT CARD */}
-          <View style={[styles.translationCard, { zIndex: 10 }]}>
+          <View
+            style={[
+              styles.translationCard,
+              {
+                zIndex: (showDropdown && suggestions.length > 0) ? 50 : 10,
+                elevation: (showDropdown && suggestions.length > 0) ? 10 : 0,
+              },
+            ]}
+          >
             <View style={styles.cardHeader}>
               <View style={styles.langIndicator}>
                 <View
@@ -176,8 +249,8 @@ export default function TranslateScreen() {
               }}
               placeholder={
                 sourceLang === "hindi"
-                  ? "Type Hindi word here..."
-                  : "Type Sanskrit word here..."
+                  ? "यहाँ हिन्दी शब्द लिखें..."
+                  : "यहाँ संस्कृत शब्द लिखें..."
               }
               placeholderTextColor={COLORS.textMuted}
             />
@@ -245,7 +318,11 @@ export default function TranslateScreen() {
               {translatedText.length > 0 && (
                 <View style={styles.headerRightActions}>
                   <TouchableOpacity onPress={handleCopy} style={styles.headerActionButton}>
-                    <Feather name="copy" size={16} color="#8f4e0099" />
+                    <Feather
+                      name={isCopied ? "check" : "copy"}
+                      size={16}
+                      color={isCopied ? COLORS.primary : "#8f4e0099"}
+                    />
                   </TouchableOpacity>
                   <TouchableOpacity onPress={handleToggleBookmark} style={styles.headerActionButton}>
                     <Feather
@@ -268,8 +345,8 @@ export default function TranslateScreen() {
               value={translatedText}
               placeholder={
                 targetLang === "sanskrit"
-                  ? "Sanskrit translation here..."
-                  : "Hindi translation here..."
+                  ? "संस्कृत अनुवाद यहाँ दिखेगा..."
+                  : "हिन्दी अनुवाद यहाँ दिखेगा..."
               }
               placeholderTextColor={COLORS.primaryMedium}
             />
@@ -284,6 +361,21 @@ export default function TranslateScreen() {
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
+
+      {toastVisible && (
+        <Animated.View
+          style={[
+            styles.toastContainer,
+            {
+              opacity: toastOpacity,
+              transform: [{ translateY: toastTranslateY }],
+            },
+          ]}
+        >
+          <Feather name="check-circle" size={16} color={COLORS.secondary} style={styles.toastIcon} />
+          <Text style={styles.toastText}>{toastMessage}</Text>
+        </Animated.View>
+      )}
 
       <BottomTabBar activeTab="translate" />
     </View>
@@ -410,9 +502,10 @@ const styles = StyleSheet.create({
   },
   dropdownContainer: {
     position: "absolute",
-    top: 130,
-    left: 16,
-    right: 16,
+    top: "100%",
+    left: 0,
+    right: 0,
+    marginTop: 6,
     backgroundColor: COLORS.card,
     borderRadius: 12,
     borderWidth: 1,
@@ -444,5 +537,32 @@ const styles = StyleSheet.create({
     fontFamily: TYPOGRAPHY.sansSemiBold,
     fontSize: 16,
     color: COLORS.textDark,
+  },
+  toastContainer: {
+    position: "absolute",
+    bottom: 96,
+    left: 24,
+    right: 24,
+    backgroundColor: "rgba(27, 28, 28, 0.95)",
+    borderRadius: 9999,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 6,
+    elevation: 6,
+    zIndex: 9999,
+  },
+  toastIcon: {
+    marginRight: 8,
+  },
+  toastText: {
+    fontFamily: TYPOGRAPHY.sansSemiBold,
+    fontSize: 14,
+    color: COLORS.textLight,
   },
 });

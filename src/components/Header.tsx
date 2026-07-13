@@ -23,18 +23,10 @@ export default function Header({ variant, onLeftPress, onRightPress }: HeaderPro
     >
       <View style={styles.content}>
         {isOnboarding ? (
-          // Onboarding Layout: Logo & Brand Left-Aligned, Profile Right
-          <>
-            <View style={styles.leftSection}>
-              <TouchableOpacity onPress={onLeftPress} style={styles.iconButton}>
-                <Feather name="menu" size={20} color={COLORS.primary} />
-              </TouchableOpacity>
-              <Text style={styles.brandTitleOnboarding}>Shabd</Text>
-            </View>
-            <TouchableOpacity onPress={onRightPress} style={styles.iconButton}>
-              <Feather name="user" size={20} color="#65645f" />
-            </TouchableOpacity>
-          </>
+          // Onboarding Layout: Brand Left-Aligned
+          <View style={styles.leftSection}>
+            <Text style={styles.brandTitleOnboarding}>Shabd</Text>
+          </View>
         ) : (
           // Translation Layout: Back Button Left, Centered Title, Info Button Right
           <>
@@ -89,7 +81,6 @@ const styles = StyleSheet.create({
     fontFamily: TYPOGRAPHY.serif,
     fontSize: 24,
     color: COLORS.primary,
-    marginLeft: 16,
     lineHeight: 32,
   },
   brandTitleTranslation: {
