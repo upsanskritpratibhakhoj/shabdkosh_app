@@ -13,7 +13,7 @@ import { Feather } from "@expo/vector-icons";
 import { COLORS, TYPOGRAPHY } from "../constants/theme";
 import Header from "../components/Header";
 import BottomTabBar from "../components/BottomTabBar";
-import FeatureCard from "../components/FeatureCard";
+import AboutDictionary from "../components/AboutDictionary";
 import { router } from "expo-router";
 import { getDictionary, fetchAndSaveDictionary } from "../utils/storage";
 
@@ -86,8 +86,8 @@ export default function OnboardingScreen() {
 
           {/* Sanskrit Quote Section */}
           <View style={styles.quoteSection}>
-            <Text style={styles.quoteText}>
-              {"\"विद्यैव सर्वधनम् प्रधानम्\""}
+            <Text style={styles.quoteTranslation}>
+              निर्माता एवं भाषा-विशेषज्ञ
             </Text>
             
             {/* Ornament Separator */}
@@ -97,8 +97,8 @@ export default function OnboardingScreen() {
               <View style={styles.ornamentLine} />
             </View>
 
-            <Text style={styles.quoteTranslation}>
-              Knowledge is the supreme of all{"\n"}wealth.
+            <Text style={styles.quoteText}>
+              जगदानन्द झा एवं जयेश कृष्ण
             </Text>
           </View>
 
@@ -108,7 +108,7 @@ export default function OnboardingScreen() {
             onPress={handleBeginJourney}
             activeOpacity={0.9}
           >
-            <Text style={styles.actionButtonText}>Begin Your Journey</Text>
+            <Text style={styles.actionButtonText}>शब्द यात्रा आरंभ करें</Text>
             <Feather name="arrow-right" size={18} color="#ffffff" style={styles.actionButtonIcon} />
           </TouchableOpacity>
 
@@ -148,42 +148,8 @@ export default function OnboardingScreen() {
           )}
         </View>
 
-        {/* Feature Grid Section */}
-        <View style={styles.featuresSection}>
-          <View style={styles.featuresHeader}>
-            <Text style={styles.featuresTitle}>KEY PILLARS</Text>
-          </View>
-
-          {/* Bento Grid layout */}
-          <View style={styles.bentoGrid}>
-            <FeatureCard
-              title="अनुवाद और शब्दकोश"
-              description="हिन्दी और संस्कृत शब्दों का आपस में सटीक और तीव्र अनुवाद करें।"
-              iconName="globe"
-              layout="horizontal"
-              height={108}
-            />
-            
-            <View style={styles.bentoRow}>
-              <FeatureCard
-                title="पसंदीदा शब्द"
-                description="महत्वपूर्ण शब्दों को यहाँ सहेजें।"
-                iconName="bookmark"
-                layout="vertical"
-                width="48%"
-                height={160}
-              />
-              <FeatureCard
-                title="खोज इतिहास"
-                description="पिछली खोजें आसानी से देखें।"
-                iconName="clock"
-                layout="vertical"
-                width="48%"
-                height={160}
-              />
-            </View>
-          </View>
-        </View>
+        {/* About the Dictionary Section */}
+        <AboutDictionary />
       </ScrollView>
 
       <BottomTabBar activeTab="library" />
@@ -241,13 +207,15 @@ const styles = StyleSheet.create({
   quoteSection: {
     alignItems: "center",
     marginBottom: 32,
+    width: "100%",
   },
   quoteText: {
     fontFamily: TYPOGRAPHY.serifItalic,
-    fontSize: 26,
+    fontSize: 20,
     color: COLORS.primary,
     textAlign: "center",
-    lineHeight: 36,
+    lineHeight: 28,
+    width: "100%",
   },
   ornamentContainer: {
     flexDirection: "row",
@@ -264,10 +232,11 @@ const styles = StyleSheet.create({
   },
   quoteTranslation: {
     fontFamily: TYPOGRAPHY.sans,
-    fontSize: 15,
+    fontSize: 14,
     color: COLORS.textMuted,
     textAlign: "center",
-    lineHeight: 22,
+    lineHeight: 20,
+    width: "100%",
   },
   actionButton: {
     width: "100%",
@@ -287,35 +256,7 @@ const styles = StyleSheet.create({
   actionButtonIcon: {
     marginLeft: 12,
   },
-  featuresSection: {
-    marginTop: 40,
-  },
-  featuresHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 16,
-    justifyContent: "space-between",
-  },
-  featuresTitle: {
-    fontFamily: TYPOGRAPHY.sans,
-    fontSize: 14,
-    fontWeight: "600",
-    color: COLORS.textMuted,
-    letterSpacing: 1.6,
-  },
-  exploreAllText: {
-    fontFamily: TYPOGRAPHY.sansSemiBold,
-    fontSize: 14,
-    color: COLORS.primary,
-  },
-  bentoGrid: {
-    gap: 16,
-  },
-  bentoRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    width: "100%",
-  },
+
 
   cacheBadge: {
     flexDirection: "row",
