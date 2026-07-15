@@ -87,9 +87,9 @@ android {
     buildToolsVersion rootProject.ext.buildToolsVersion
     compileSdk rootProject.ext.compileSdkVersion
 
-    namespace 'com.jayeshkrishna.sabdkosh'
+    namespace 'com.jayeshkrishna.shabdkosh'
     defaultConfig {
-        applicationId 'com.jayeshkrishna.sabdkosh'
+        applicationId 'com.jayeshkrishna.shabdkosh'
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1

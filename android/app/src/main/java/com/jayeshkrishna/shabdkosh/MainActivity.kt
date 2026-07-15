@@ -1,4 +1,4 @@
-package com.jayeshkrishna.sabdkosh
+package com.jayeshkrishna.shabdkosh
 import expo.modules.splashscreen.SplashScreenManager
 
 import android.os.Build

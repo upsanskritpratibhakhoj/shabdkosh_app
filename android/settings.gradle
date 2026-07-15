@@ -31,7 +31,7 @@ extensions.configure(com.facebook.react.ReactSettingsExtension) { ex ->
 }
 expoAutolinking.useExpoModules()
 
-rootProject.name = 'sabdkosh'
+rootProject.name = 'हिन्दी संस्कृत शब्दकोश'
 
 expoAutolinking.useExpoVersionCatalog()
 

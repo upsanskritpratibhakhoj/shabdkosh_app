@@ -403,14 +403,6 @@ export default function TranslateScreen() {
               }
               placeholderTextColor={COLORS.primaryMedium}
             />
-
-            {translatedText.length > 0 && (
-              <View style={styles.cardFooterSanskrit}>
-                <View style={styles.formalTag}>
-                  <Text style={styles.formalTagText}>FORMAL</Text>
-                </View>
-              </View>
-            )}
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
@@ -502,7 +494,7 @@ const styles = StyleSheet.create({
     fontSize: 24,
     color: COLORS.textMuted,
     lineHeight: 32,
-    minHeight: 80,
+    minHeight: 120,
     textAlignVertical: "top",
     padding: 0,
   },

@@ -211,7 +211,7 @@ const styles = StyleSheet.create({
   },
   quoteText: {
     fontFamily: TYPOGRAPHY.serifItalic,
-    fontSize: 20,
+    fontSize: 18,
     color: COLORS.primary,
     textAlign: "center",
     lineHeight: 28,
@@ -232,7 +232,7 @@ const styles = StyleSheet.create({
   },
   quoteTranslation: {
     fontFamily: TYPOGRAPHY.sans,
-    fontSize: 14,
+    fontSize: 16,
     color: COLORS.textMuted,
     textAlign: "center",
     lineHeight: 20,

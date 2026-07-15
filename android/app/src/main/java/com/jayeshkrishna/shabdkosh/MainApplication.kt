@@ -1,4 +1,4 @@
-package com.jayeshkrishna.sabdkosh
+package com.jayeshkrishna.shabdkosh
 
 import android.app.Application
 import android.content.res.Configuration

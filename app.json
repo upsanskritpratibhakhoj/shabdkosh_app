@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "sabdkosh",
-    "slug": "sabdkosh",
+    "name": "हिन्दी संस्कृत शब्दकोश",
+    "slug": "shabdkosh",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/shabd_logo.png",
@@ -16,7 +16,7 @@
         "foregroundImage": "./assets/images/shabd_logo.png"
       },
       "predictiveBackGestureEnabled": false,
-      "package": "com.jayeshkrishna.sabdkosh"
+      "package": "com.jayeshkrishna.shabdkosh"
     },
     "web": {
       "output": "static",
