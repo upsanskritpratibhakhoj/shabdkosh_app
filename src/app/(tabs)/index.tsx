@@ -10,12 +10,11 @@ import {
   Alert,
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
-import { COLORS, TYPOGRAPHY } from "../constants/theme";
-import Header from "../components/Header";
-import BottomTabBar from "../components/BottomTabBar";
-import AboutDictionary from "../components/AboutDictionary";
+import { COLORS, TYPOGRAPHY } from "../../constants/theme";
+import Header from "../../components/Header";
 import { router } from "expo-router";
-import { getDictionary, fetchAndSaveDictionary } from "../utils/storage";
+import { getDictionary, fetchAndSaveDictionary } from "../../utils/storage";
+import FeatureCard from "@/components/FeatureCard";
 
 export default function OnboardingScreen() {
   const [syncStatus, setSyncStatus] = useState<"idle" | "syncing" | "success" | "error">("idle");
@@ -78,7 +77,7 @@ export default function OnboardingScreen() {
           {/* Logo Section */}
           <View style={styles.logoContainer}>
             <Image
-              source={require("../../assets/images/shabd_logo.png")}
+              source={require("../../../assets/images/shabd_logo.png")}
               style={styles.logo}
               resizeMode="contain"
             />
@@ -147,14 +146,56 @@ export default function OnboardingScreen() {
             </View>
           )}
         </View>
+         {/* Feature Grid Section */}
+        <View style={styles.featuresSection}>
+          <View style={styles.featuresHeader}>
+            <Text style={styles.featuresTitle}>KEY PILLARS</Text>
+          </View>
 
-        {/* About the Dictionary Section */}
-        <AboutDictionary />
+          {/* Bento Grid layout */}
+          <View style={styles.bentoGrid}>
+            <FeatureCard
+              title="अनुवाद और शब्दकोश"
+              description="हिन्दी और संस्कृत शब्दों का आपस में सटीक और तीव्र अनुवाद करें।"
+              iconName="globe"
+              layout="horizontal"
+              height={108}
+            />
+            
+            <View style={styles.bentoRow}>
+              <FeatureCard
+                title="पसंदीदा शब्द"
+                description="महत्वपूर्ण शब्दों को यहाँ सहेजें।"
+                iconName="bookmark"
+                layout="vertical"
+                width="48%"
+                height={160}
+              />
+              <FeatureCard
+                title="खोज इतिहास"
+                description="पिछली खोजें आसानी से देखें।"
+                iconName="clock"
+                layout="vertical"
+                width="48%"
+                height={160}
+              />
+            </View>
+          </View>
+        </View>
+
+        {/* About the Dictionary Button Section */}
+        <TouchableOpacity
+          style={styles.aboutButton}
+          onPress={() => router.push("/about")}
+          activeOpacity={0.8}
+        >
+          <View style={styles.aboutButtonContent}>
+            <Feather name="info" size={20} color={COLORS.primary} style={styles.aboutButtonIcon} />
+            <Text style={styles.aboutButtonText}>ऐप के बारे में और जानें</Text>
+          </View>
+          <Feather name="chevron-right" size={20} color={COLORS.primary} />
+        </TouchableOpacity>
       </ScrollView>
-
-      <BottomTabBar activeTab="library" />
-
-
     </View>
   );
 }
@@ -163,6 +204,35 @@ const styles = StyleSheet.create({
   outerContainer: {
     flex: 1,
     backgroundColor: COLORS.background,
+  },
+  featuresSection: {
+    marginTop: 40,
+  },
+  featuresHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 16,
+    justifyContent: "space-between",
+  },
+  featuresTitle: {
+    fontFamily: TYPOGRAPHY.sans,
+    fontSize: 14,
+    fontWeight: "600",
+    color: COLORS.textMuted,
+    letterSpacing: 1.6,
+  },
+  exploreAllText: {
+    fontFamily: TYPOGRAPHY.sansSemiBold,
+    fontSize: 14,
+    color: COLORS.primary,
+  },
+  bentoGrid: {
+    gap: 16,
+  },
+  bentoRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    width: "100%",
   },
   decoratorCircle: {
     position: "absolute",
@@ -178,7 +248,7 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingHorizontal: 24,
     paddingTop: 24,
-    paddingBottom: 120, // margin to scroll clear of bottom navigation bar
+    paddingBottom: 40, // Reduced since native TabBar is now persistent
   },
   heroCard: {
     backgroundColor: COLORS.card,
@@ -256,8 +326,6 @@ const styles = StyleSheet.create({
   actionButtonIcon: {
     marginLeft: 12,
   },
-
-
   cacheBadge: {
     flexDirection: "row",
     alignItems: "center",
@@ -270,5 +338,35 @@ const styles = StyleSheet.create({
     fontFamily: TYPOGRAPHY.sans,
     fontSize: 13,
     color: COLORS.textMuted,
+  },
+  aboutButton: {
+    backgroundColor: COLORS.card,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    padding: 16,
+    marginTop: 28,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    shadowColor: COLORS.primary,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.02,
+    shadowRadius: 4,
+    elevation: 1,
+  },
+  aboutButtonContent: {
+    flexDirection: "row",
+    alignItems: "center",
+    flex: 1,
+  },
+  aboutButtonText: {
+    fontFamily: TYPOGRAPHY.sansSemiBold,
+    fontSize: 16,
+    color: COLORS.primary,
+    marginLeft: 12,
+  },
+  aboutButtonIcon: {
+    marginRight: 4,
   },
 });

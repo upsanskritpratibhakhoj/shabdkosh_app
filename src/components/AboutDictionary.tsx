@@ -6,11 +6,7 @@ import { COLORS, TYPOGRAPHY, SPACING } from "../constants/theme";
 export default function AboutDictionary() {
   return (
     <View style={styles.container}>
-      <View style={styles.headerContainer}>
-        <Text style={styles.title}>इस शब्दकोश के बारे में</Text>
-        <View style={styles.titleDivider} />
-      </View>
-
+      
       <Text style={styles.paragraph}>
         संस्कृत भारतीय ज्ञान-परम्परा, दर्शन, साहित्य, विज्ञान तथा संस्कृति की आधारभूत भाषा है। यद्यपि संस्कृत का साहित्य अत्यन्त समृद्ध एवं व्यापक है, तथापि सामान्य जन, विद्यार्थी, अध्यापक, शोधार्थी तथा अनुवादक प्रायः इस कठिनाई का अनुभव करते हैं कि किसी हिन्दी शब्द के लिए उपयुक्त एवं प्रसंगानुकूल संस्कृत शब्द का चयन सहजता से उपलब्ध नहीं हो पाता। एक ही हिन्दी शब्द के अनेक अर्थ तथा उनके अनुरूप संस्कृत में भिन्न-भिन्न पर्याय होने के कारण यह आवश्यकता और भी अधिक अनुभव की जाती है।
       </Text>

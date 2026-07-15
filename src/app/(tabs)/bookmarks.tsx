@@ -9,57 +9,50 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Feather } from "@expo/vector-icons";
-import { COLORS, TYPOGRAPHY } from "../constants/theme";
-import BottomTabBar from "../components/BottomTabBar";
+import { COLORS, TYPOGRAPHY } from "../../constants/theme";
 import { router, useFocusEffect } from "expo-router";
-import { getHistory, deleteHistoryItem, clearHistory, HistoryItem } from "../utils/storage";
+import { getBookmarks, toggleBookmark, BookmarkItem } from "../../utils/storage";
 
-export default function HistoryScreen() {
-  const [historyList, setHistoryList] = useState<HistoryItem[]>([]);
+export default function BookmarksScreen() {
+  const [bookmarksList, setBookmarksList] = useState<BookmarkItem[]>([]);
 
-  const loadHistory = async () => {
-    const data = await getHistory();
-    setHistoryList(data);
+  const loadBookmarks = async () => {
+    const data = await getBookmarks();
+    setBookmarksList(data);
   };
 
   useFocusEffect(
     useCallback(() => {
-      loadHistory();
+      loadBookmarks();
     }, [])
   );
 
-  const handleClearAll = async () => {
-    await clearHistory();
-    setHistoryList([]);
+  const handleRemoveBookmark = async (item: BookmarkItem) => {
+    await toggleBookmark(item.hindi, item.sanskrit);
+    // Refresh the list
+    loadBookmarks();
   };
 
-  const handleDeleteItem = async (id: string) => {
-    const updated = await deleteHistoryItem(id);
-    setHistoryList(updated);
-  };
-
-  const handleSelectHistory = (item: HistoryItem) => {
+  const handleSelectBookmark = (item: BookmarkItem) => {
     router.replace({
       pathname: "/translate",
-      params: { word: item.sourceText, sourceLang: item.sourceLang },
+      params: { word: item.hindi, sourceLang: "hindi" },
     });
   };
 
-  const renderItem = ({ item }: { item: HistoryItem }) => {
+  const renderItem = ({ item }: { item: BookmarkItem }) => {
     return (
-      <View style={styles.historyCard}>
+      <View style={styles.bookmarkCard}>
         <TouchableOpacity
           style={styles.cardClickableArea}
-          onPress={() => handleSelectHistory(item)}
+          onPress={() => handleSelectBookmark(item)}
           activeOpacity={0.7}
         >
           <View style={styles.translationRow}>
             <View style={styles.wordBlock}>
-              <Text style={styles.langLabel}>
-                {item.sourceLang.toUpperCase()}
-              </Text>
+              <Text style={styles.langLabel}>HINDI</Text>
               <Text style={styles.wordText} numberOfLines={1}>
-                {item.sourceText}
+                {item.hindi}
               </Text>
             </View>
 
@@ -71,22 +64,20 @@ export default function HistoryScreen() {
             />
 
             <View style={styles.wordBlock}>
-              <Text style={styles.langLabel}>
-                {item.targetLang.toUpperCase()}
-              </Text>
-              <Text style={[styles.wordText, item.targetLang === "sanskrit" ? styles.sanskritText : undefined]} numberOfLines={1}>
-                {item.targetText}
+              <Text style={styles.langLabel}>SANSKRIT</Text>
+              <Text style={[styles.wordText, styles.sanskritText]} numberOfLines={1}>
+                {item.sanskrit}
               </Text>
             </View>
           </View>
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={styles.deleteButton}
-          onPress={() => handleDeleteItem(item.id)}
+          style={styles.removeButton}
+          onPress={() => handleRemoveBookmark(item)}
           activeOpacity={0.6}
         >
-          <Feather name="trash-2" size={18} color="#c25353" />
+          <Feather name="bookmark" size={20} color={COLORS.primary} />
         </TouchableOpacity>
       </View>
     );
@@ -96,22 +87,17 @@ export default function HistoryScreen() {
     <SafeAreaView style={styles.container} edges={["top", "left", "right"]}>
       <StatusBar barStyle="dark-content" />
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>History</Text>
-        {historyList.length > 0 && (
-          <TouchableOpacity onPress={handleClearAll} activeOpacity={0.7}>
-            <Text style={styles.clearAllText}>Clear All</Text>
-          </TouchableOpacity>
-        )}
+        <Text style={styles.headerTitle}>Saved Words</Text>
       </View>
 
-      {historyList.length === 0 ? (
+      {bookmarksList.length === 0 ? (
         <View style={styles.emptyState}>
           <View style={styles.emptyIconContainer}>
-            <Feather name="clock" size={48} color={COLORS.primaryMedium} />
+            <Feather name="bookmark" size={48} color={COLORS.primaryMedium} />
           </View>
-          <Text style={styles.emptyTitle}>Your history is empty</Text>
+          <Text style={styles.emptyTitle}>No saved words yet</Text>
           <Text style={styles.emptySubtitle}>
-            Words you translate will appear here.
+            Tap the bookmark icon on translation results to save words here.
           </Text>
           <TouchableOpacity
             style={styles.translateNowButton}
@@ -124,15 +110,13 @@ export default function HistoryScreen() {
         </View>
       ) : (
         <FlatList
-          data={historyList}
+          data={bookmarksList}
           keyExtractor={(item) => item.id}
           renderItem={renderItem}
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
         />
       )}
-
-      <BottomTabBar activeTab="history" />
     </SafeAreaView>
   );
 }
@@ -157,17 +141,12 @@ const styles = StyleSheet.create({
     fontSize: 28,
     color: COLORS.primary,
   },
-  clearAllText: {
-    fontFamily: TYPOGRAPHY.sansSemiBold,
-    fontSize: 14,
-    color: COLORS.primary,
-  },
   listContent: {
     paddingHorizontal: 16,
     paddingTop: 16,
-    paddingBottom: 100,
+    paddingBottom: 40, // Reduced bottom padding since native TabBar takes it
   },
-  historyCard: {
+  bookmarkCard: {
     backgroundColor: COLORS.card,
     borderRadius: 16,
     borderWidth: 1,
@@ -210,7 +189,7 @@ const styles = StyleSheet.create({
   arrowIcon: {
     marginHorizontal: 12,
   },
-  deleteButton: {
+  removeButton: {
     padding: 8,
     marginLeft: 8,
   },
@@ -219,7 +198,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     paddingHorizontal: 32,
-    paddingBottom: 100,
+    paddingBottom: 40, // Reduced bottom padding since native TabBar takes it
   },
   emptyIconContainer: {
     width: 96,

@@ -12,12 +12,11 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
-import { COLORS, TYPOGRAPHY } from "../constants/theme";
-import Header from "../components/Header";
-import BottomTabBar from "../components/BottomTabBar";
+import { COLORS, TYPOGRAPHY } from "../../constants/theme";
+import Header from "../../components/Header";
 import { router, useLocalSearchParams } from "expo-router";
 import * as Clipboard from "expo-clipboard";
-import { addHistory, toggleBookmark, isBookmarked, getDictionary, DictionaryItem } from "../utils/storage";
+import { addHistory, toggleBookmark, isBookmarked, getDictionary, DictionaryItem } from "../../utils/storage";
 
 export default function TranslateScreen() {
   const params = useLocalSearchParams<{ word?: string; sourceLang?: "hindi" | "sanskrit" }>();
@@ -161,7 +160,7 @@ export default function TranslateScreen() {
   };
 
   const handleBack = () => {
-    router.replace("/");
+    router.replace("/(tabs)/index" as any);
   };
 
   const handleSwap = () => {
@@ -217,7 +216,6 @@ export default function TranslateScreen() {
           <ActivityIndicator size="large" color={COLORS.primary} />
           <Text style={styles.loadingText}>Loading dictionary...</Text>
         </View>
-        <BottomTabBar activeTab="translate" />
       </View>
     );
   }
@@ -234,12 +232,11 @@ export default function TranslateScreen() {
           </Text>
           <TouchableOpacity 
             style={styles.downloadButton}
-            onPress={() => router.replace("/")}
+            onPress={() => router.replace("/(tabs)/index" as any)}
           >
             <Text style={styles.downloadButtonText}>Go to Onboarding & Sync</Text>
           </TouchableOpacity>
         </View>
-        <BottomTabBar activeTab="translate" />
       </View>
     );
   }
@@ -421,8 +418,6 @@ export default function TranslateScreen() {
           <Text style={styles.toastText}>{toastMessage}</Text>
         </Animated.View>
       )}
-
-      <BottomTabBar activeTab="translate" />
     </View>
   );
 }
@@ -438,7 +433,7 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingHorizontal: 16,
     paddingTop: 24,
-    paddingBottom: 120,
+    paddingBottom: 40, // Reduced bottom padding since native TabBar takes it
   },
   translationCard: {
     backgroundColor: COLORS.cardMuted,

@@ -7,9 +7,10 @@ import { router } from "expo-router";
 
 interface BottomTabBarProps {
   activeTab: "translate" | "history" | "bookmarks" | "library";
+  navigation?: any;
 }
 
-export default function BottomTabBar({ activeTab }: BottomTabBarProps) {
+export default function BottomTabBar({ activeTab, navigation }: BottomTabBarProps) {
   const insets = useSafeAreaInsets();
 
   // Onboarding screen style has all-caps 10px text and library highlighted.
@@ -38,7 +39,11 @@ export default function BottomTabBar({ activeTab }: BottomTabBarProps) {
   ];
 
   const handlePress = (route: any, id: string) => {
-    router.replace(route);
+    if (navigation) {
+      navigation.navigate(id === "library" ? "index" : id);
+    } else {
+      router.replace(route);
+    }
   };
 
   return (
