@@ -160,7 +160,7 @@ export default function TranslateScreen() {
   };
 
   const handleBack = () => {
-    router.replace("/(tabs)/index" as any);
+    router.replace("/" as any);
   };
 
   const handleSwap = () => {
@@ -232,7 +232,7 @@ export default function TranslateScreen() {
           </Text>
           <TouchableOpacity 
             style={styles.downloadButton}
-            onPress={() => router.replace("/(tabs)/index" as any)}
+            onPress={() => router.replace("/" as any)}
           >
             <Text style={styles.downloadButtonText}>Go to Onboarding & Sync</Text>
           </TouchableOpacity>
@@ -433,7 +433,7 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingHorizontal: 16,
     paddingTop: 24,
-    paddingBottom: 40, // Reduced bottom padding since native TabBar takes it
+    paddingBottom: 120, // offset for absolute tab bar
   },
   translationCard: {
     backgroundColor: COLORS.cardMuted,

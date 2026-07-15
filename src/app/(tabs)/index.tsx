@@ -248,7 +248,7 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingHorizontal: 24,
     paddingTop: 24,
-    paddingBottom: 40, // Reduced since native TabBar is now persistent
+    paddingBottom: 130, // offset for absolute tab bar
   },
   heroCard: {
     backgroundColor: COLORS.card,

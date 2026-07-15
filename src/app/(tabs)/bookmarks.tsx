@@ -144,7 +144,7 @@ const styles = StyleSheet.create({
   listContent: {
     paddingHorizontal: 16,
     paddingTop: 16,
-    paddingBottom: 40, // Reduced bottom padding since native TabBar takes it
+    paddingBottom: 110, // offset for absolute tab bar
   },
   bookmarkCard: {
     backgroundColor: COLORS.card,
@@ -198,7 +198,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     paddingHorizontal: 32,
-    paddingBottom: 40, // Reduced bottom padding since native TabBar takes it
+    paddingBottom: 110, // offset for absolute tab bar
   },
   emptyIconContainer: {
     width: 96,
