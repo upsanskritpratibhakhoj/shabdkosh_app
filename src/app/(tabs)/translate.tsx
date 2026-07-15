@@ -17,13 +17,12 @@ import Header from "../../components/Header";
 import { router, useLocalSearchParams } from "expo-router";
 import * as Clipboard from "expo-clipboard";
 import { addHistory, toggleBookmark, isBookmarked, getDictionary, DictionaryItem } from "../../utils/storage";
+import { fetchTransliteration } from "../../utils/transliterate";
 
 export default function TranslateScreen() {
   const params = useLocalSearchParams<{ word?: string; sourceLang?: "hindi" | "sanskrit" }>();
-
   const [dictionary, setDictionary] = useState<DictionaryItem[]>([]);
   const [isLoadingDict, setIsLoadingDict] = useState(true);
-
   // Load dictionary on mount
   useEffect(() => {
     const loadDictionaryData = async () => {
@@ -38,12 +37,13 @@ export default function TranslateScreen() {
     };
     loadDictionaryData();
   }, []);
-
   const [sourceLang, setSourceLang] = useState<"hindi" | "sanskrit">("hindi");
   const [targetLang, setTargetLang] = useState<"hindi" | "sanskrit">("sanskrit");
   const [inputText, setInputText] = useState("");
   const [translatedText, setTranslatedText] = useState("");
   const [showDropdown, setShowDropdown] = useState(false);
+  const [transliterations, setTransliterations] = useState<string[]>([]);
+  const [isTransliterating, setIsTransliterating] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
@@ -51,7 +51,6 @@ export default function TranslateScreen() {
   const [toastOpacity] = useState(() => new Animated.Value(0));
   const [toastTranslateY] = useState(() => new Animated.Value(15));
   const toastTimeoutRef = React.useRef<any>(null);
-
   // Clean up toast timeout on unmount
   useEffect(() => {
     return () => {
@@ -60,7 +59,27 @@ export default function TranslateScreen() {
       }
     };
   }, []);
-
+  // Transliteration logic with debounce
+  useEffect(() => {
+    const trimmed = inputText.trim();
+    if (!trimmed || !/[a-zA-Z]/.test(trimmed)) {
+      /* eslint-disable-next-line react-hooks/set-state-in-effect */
+      setTransliterations([]);
+      return;
+    }
+    setIsTransliterating(true);
+    const delayDebounceFn = setTimeout(async () => {
+      try {
+        const suggestions = await fetchTransliteration(trimmed, sourceLang);
+        setTransliterations(suggestions);
+      } catch (err) {
+        console.error("Transliteration error:", err);
+      } finally {
+        setIsTransliterating(false);
+      }
+    }, 300); // 300ms debounce
+    return () => clearTimeout(delayDebounceFn);
+  }, [inputText, sourceLang]);
   const showToastNotification = (message: string) => {
     if (toastTimeoutRef.current) {
       clearTimeout(toastTimeoutRef.current);
@@ -103,7 +122,6 @@ export default function TranslateScreen() {
       }, 1500);
     });
   };
-
   // Sync with route params (if navigating from bookmarks or history)
   useEffect(() => {
     if (params.word && dictionary.length > 0) {
@@ -125,7 +143,6 @@ export default function TranslateScreen() {
       /* eslint-enable react-hooks/set-state-in-effect */
     }
   }, [params.word, params.sourceLang, dictionary]);
-
   // Sync bookmark state
   useEffect(() => {
     const checkBookmark = async () => {
@@ -140,7 +157,6 @@ export default function TranslateScreen() {
     };
     checkBookmark();
   }, [inputText, translatedText, sourceLang]);
-
   const performTranslation = (text: string, currentSource: "hindi" | "sanskrit", currentTarget: "hindi" | "sanskrit") => {
     const trimmed = text.trim();
     if (!trimmed) {
@@ -158,11 +174,9 @@ export default function TranslateScreen() {
       setTranslatedText("");
     }
   };
-
   const handleBack = () => {
     router.replace("/" as any);
   };
-
   const handleSwap = () => {
     const newSource = targetLang;
     const newTarget = sourceLang;
@@ -171,14 +185,20 @@ export default function TranslateScreen() {
     setInputText(translatedText);
     setTranslatedText(inputText);
     setShowDropdown(false);
+    setTransliterations([]);
   };
-
   const handleClear = () => {
     setInputText("");
     setTranslatedText("");
     setShowDropdown(false);
+    setTransliterations([]);
   };
-
+  const handleSelectTransliteration = (selectedWord: string) => {
+    setInputText(selectedWord);
+    setTransliterations([]);
+    performTranslation(selectedWord, sourceLang, targetLang);
+    setShowDropdown(true);
+  };
   const handleToggleBookmark = async () => {
     if (!inputText.trim() || !translatedText.trim()) return;
     const hindi = sourceLang === "hindi" ? inputText.trim() : translatedText.trim();
@@ -187,7 +207,6 @@ export default function TranslateScreen() {
     setIsSaved(added);
     showToastNotification(added ? "Added to bookmarks!" : "Removed from bookmarks!");
   };
-
   const handleCopy = async () => {
     if (!translatedText) return;
     await Clipboard.setStringAsync(translatedText);
@@ -197,7 +216,6 @@ export default function TranslateScreen() {
       setIsCopied(false);
     }, 2000);
   };
-
   const suggestions = inputText.trim()
     ? dictionary.filter((item) => {
         const val = item[sourceLang];
@@ -205,9 +223,8 @@ export default function TranslateScreen() {
           val.toLowerCase().startsWith(inputText.trim().toLowerCase()) &&
           val.toLowerCase() !== inputText.trim().toLowerCase()
         );
-      }).slice(0, 5)
+      })
     : [];
-
   if (isLoadingDict) {
     return (
       <View style={styles.outerContainer}>
@@ -219,7 +236,6 @@ export default function TranslateScreen() {
       </View>
     );
   }
-
   if (dictionary.length === 0) {
     return (
       <View style={styles.outerContainer}>
@@ -240,11 +256,9 @@ export default function TranslateScreen() {
       </View>
     );
   }
-
   return (
     <View style={styles.outerContainer}>
       <Header variant="translation" onLeftPress={handleBack} />
-
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={styles.keyboardContainer}
@@ -280,14 +294,12 @@ export default function TranslateScreen() {
                   {sourceLang === "hindi" ? "HINDI" : "SANSKRIT"}
                 </Text>
               </View>
-
               {inputText.length > 0 && (
                 <TouchableOpacity onPress={handleClear} style={styles.closeButton}>
                   <Feather name="x" size={16} color="#8f4e0099" />
                 </TouchableOpacity>
               )}
             </View>
-
             <TextInput
               style={styles.textInput}
               multiline
@@ -299,40 +311,69 @@ export default function TranslateScreen() {
               }}
               placeholder={
                 sourceLang === "hindi"
-                  ? "यहाँ हिन्दी शब्द लिखें..."
+                  ? "यहाँ देवनागरी में लिखें...."
                   : "यहाँ संस्कृत शब्द लिखें..."
               }
               placeholderTextColor={COLORS.textMuted}
             />
-
-            {showDropdown && suggestions.length > 0 && (
-              <View style={styles.dropdownContainer}>
-                {suggestions.map((item, idx) => {
-                  const word = item[sourceLang];
-                  const trans = item[targetLang];
-                  return (
+            {/* TRANSLITERATION SUGGESTIONS */}
+            {transliterations.length > 0 && (
+              <View style={styles.transliterationContainer}>
+                <View style={styles.transliterationHeader}>
+                  <Feather name="globe" size={12} color={COLORS.primaryMedium} />
+                  <Text style={styles.transliterationTitle}>सुझाव (Suggestions):</Text>
+                  {isTransliterating && <ActivityIndicator size="small" color={COLORS.primary} style={{ marginLeft: 4 }} />}
+                </View>
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={styles.transliterationScroll}
+                  keyboardShouldPersistTaps="handled"
+                >
+                  {transliterations.map((item, idx) => (
                     <TouchableOpacity
                       key={idx}
-                      style={styles.dropdownItem}
-                      onPress={() => {
-                        setInputText(word);
-                        setTranslatedText(trans);
-                        setShowDropdown(false);
-                        addHistory(word, trans, sourceLang, targetLang);
-                      }}
+                      style={styles.transliterationPill}
+                      onPress={() => handleSelectTransliteration(item)}
                     >
-                      <View style={styles.suggestionRow}>
-                        <Feather name="search" size={14} color={COLORS.primaryMedium} style={styles.searchIcon} />
-                        <Text style={styles.suggestionText}>{word}</Text>
-                      </View>
-                      <Feather name="arrow-up-left" size={16} color={COLORS.textGray} />
+                      <Text style={styles.transliterationPillText}>{item}</Text>
                     </TouchableOpacity>
-                  );
-                })}
+                  ))}
+                </ScrollView>
+              </View>
+            )}
+            {showDropdown && suggestions.length > 0 && (
+              <View style={styles.dropdownContainer}>
+                <ScrollView 
+                  keyboardShouldPersistTaps="handled"
+                  nestedScrollEnabled={true}
+                >
+                  {suggestions.map((item, idx) => {
+                    const word = item[sourceLang];
+                    const trans = item[targetLang];
+                    return (
+                      <TouchableOpacity
+                        key={idx}
+                        style={styles.dropdownItem}
+                        onPress={() => {
+                          setInputText(word);
+                          setTranslatedText(trans);
+                          setShowDropdown(false);
+                          addHistory(word, trans, sourceLang, targetLang);
+                        }}
+                      >
+                        <View style={styles.suggestionRow}>
+                          <Feather name="search" size={14} color={COLORS.primaryMedium} style={styles.searchIcon} />
+                          <Text style={styles.suggestionText}>{word}</Text>
+                        </View>
+                        <Feather name="arrow-up-left" size={16} color={COLORS.textGray} />
+                      </TouchableOpacity>
+                    );
+                  })}
+                </ScrollView>
               </View>
             )}
           </View>
-
           {/* SWAP DIVIDER */}
           <View style={styles.swapDividerContainer}>
             <View style={styles.dividerLine} />
@@ -345,7 +386,6 @@ export default function TranslateScreen() {
             </TouchableOpacity>
             <View style={styles.dividerLine} />
           </View>
-
           {/* TARGET OUTPUT CARD */}
           <View style={[styles.translationCard, { zIndex: 1 }]}>
             <View style={styles.cardHeader}>
@@ -364,7 +404,6 @@ export default function TranslateScreen() {
                   {targetLang === "hindi" ? "HINDI" : "SANSKRIT"}
                 </Text>
               </View>
-
               {translatedText.length > 0 && (
                 <View style={styles.headerRightActions}>
                   <TouchableOpacity onPress={handleCopy} style={styles.headerActionButton}>
@@ -384,7 +423,6 @@ export default function TranslateScreen() {
                 </View>
               )}
             </View>
-
             <TextInput
               style={[
                 styles.textInput,
@@ -403,7 +441,6 @@ export default function TranslateScreen() {
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
-
       {toastVisible && (
         <Animated.View
           style={[
@@ -421,7 +458,6 @@ export default function TranslateScreen() {
     </View>
   );
 }
-
 const styles = StyleSheet.create({
   outerContainer: {
     flex: 1,
@@ -541,21 +577,13 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   dropdownContainer: {
-    position: "absolute",
-    top: "100%",
-    left: 0,
-    right: 0,
-    marginTop: 6,
+    marginTop: 12,
     backgroundColor: COLORS.card,
     borderRadius: 12,
     borderWidth: 1,
     borderColor: "rgba(143, 78, 0, 0.15)",
-    shadowColor: COLORS.primary,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
-    elevation: 4,
-    zIndex: 999,
+    maxHeight: 250,
+    overflow: "hidden",
   },
   dropdownItem: {
     flexDirection: "row",
@@ -643,5 +671,40 @@ const styles = StyleSheet.create({
     fontFamily: TYPOGRAPHY.sansSemiBold,
     fontSize: 15,
     color: COLORS.textLight,
+  },
+  transliterationContainer: {
+    marginTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: "rgba(143, 78, 0, 0.08)",
+    paddingTop: 12,
+  },
+  transliterationHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    marginBottom: 8,
+  },
+  transliterationTitle: {
+    fontFamily: TYPOGRAPHY.sansSemiBold,
+    fontSize: 12,
+    color: COLORS.primaryMedium,
+    letterSpacing: 0.5,
+  },
+  transliterationScroll: {
+    paddingBottom: 4,
+    gap: 8,
+  },
+  transliterationPill: {
+    backgroundColor: COLORS.primaryLight,
+    borderWidth: 1,
+    borderColor: "rgba(143, 78, 0, 0.15)",
+    borderRadius: 20,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+  },
+  transliterationPillText: {
+    fontFamily: TYPOGRAPHY.sansSemiBold,
+    fontSize: 14,
+    color: COLORS.primary,
   },
 });
